@@ -1,16 +1,73 @@
 import React from 'react';
-import '../Styles/newPost.css';
+import Axios from 'axios';
 
-function NewPost() {
 
-    return (
-        <div>
-            <h2>Create New Post</h2>
-            <input className={'title'} type={'text'} placeholder={"Enter the title of your post"} name={'title'} required/><br/>
-            <textarea className={'text'} placeholder="post Content goes here" required/><br/>
-            <button className="button" type="submit"  > save post</button>
-        </div>
-    );
+class NewPost extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            title: '',
+            content: '',
+            author: '',
+        };
+    }
+
+    handleTitleChange = (e) => {
+        this.setState({
+            title: e.target.value,
+        })
+    }
+    handleContentChange = (e) => {
+        this.setState({
+            content: e.target.value,
+        })
+    }
+    handleAuthorChange = (e) => {
+        this.setState({
+            author: e.target.value,
+        })
+    }
+
+    handleSubmit = (e) => {
+        e.preventDefault();
+        const data = {
+            title: this.state.title,
+            content: this.state.content,
+            author: this.state.author,
+        }
+
+        Axios.post('/posts', data).then(res => {
+            const post = res.data;
+            this.setState({
+                title: post['title'],
+                content: post['content'],
+                author:post['author']
+            });
+        })
+    }
+
+    render() {
+        return (
+            <div>
+                <h1>Create new post</h1>
+                <p>
+                    <br/>
+                    <input type="text" value={this.state.title} placeholder="Enter your title" size="48" onChange={this.handleTitleChange}/>
+                    <br/><br/>
+                    <textarea rows="8" cols="50" value={this.state.content} placeholder="Enter your post content" onChange={this.handleContentChange}/>
+                    <br/><br/>
+                    <input type="text" value={this.state.author} placeholder="Author Name" size="48" onChange={this.handleAuthorChange}/>
+                    <br/><br/>
+                    <input type="submit" value="Save post" onClick={this.handleSubmit}/>
+                </p>
+            </div>
+        );
+
+    }
 }
 
 export default NewPost;
+
+
+

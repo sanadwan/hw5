@@ -1,8 +1,8 @@
 import React from 'react';
 import "../Styles/header.css";
-import {Link} from "react-router-dom";
+import {Link} from 'react-router-dom'
 
-function Header(props) {
+function Header() {
     return (
         <header>
             <div className="nav-bar">
@@ -11,7 +11,7 @@ function Header(props) {
                     <span className="vertical-line"> | </span>
                     <Link to="/About">About</Link>
                     <span className="vertical-line"> | </span>
-                    <Link to="/AboutMe">About Me</Link>
+                    <Link to="/AboutMe">Contact</Link>
                     <span className="vertical-line"> | </span>
                     <Link to="/newPost">New Post</Link>
                 </div>

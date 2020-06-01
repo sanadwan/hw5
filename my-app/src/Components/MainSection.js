@@ -1,6 +1,5 @@
 import React from 'react';
 import Posts from './Posts'
-import {Link} from 'react-router-dom'
 
 function MainSection() {
     return (
