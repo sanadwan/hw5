@@ -5,7 +5,7 @@ import json
 db = mysql.connect(
     host = "localhost",
     user = "root",
-    passwd = "passwd",
+    passwd = "Sa204124978",
     database = "myblog"
 )
 
