@@ -1,0 +1,9 @@
+.loginForm{
+    border: black;
+    padding: 20px;
+
+}
+.loginResponse{
+    align-content: center;
+    font-style: italic;
+}

@@ -40,9 +40,9 @@ class NewPost extends React.Component {
         Axios.post('/posts', data).then(res => {
             const post = res.data;
             this.setState({
-                title: post['title'],
-                content: post['content'],
-                author:post['author']
+                title: '',
+                content: '',
+                author:''
             });
         })
     }

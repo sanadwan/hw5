@@ -1,0 +1,9 @@
+.registerForm{
+    border: black;
+    padding: 20px;
+
+}
+.registerResponse{
+    align-content: center;
+    font-style: italic;
+}
