@@ -9,8 +9,8 @@ class Login extends React.Component{
         super(props);
         this.state = {}
         this.setState({
-            username: null,
-            password: null,
+            username: '',
+            password: '',
             resp: null,
         })
     }

@@ -5,13 +5,20 @@ import uuid
 import bcrypt
 
 db = mysql.connect(
-    host = "localhost",
-    user = "root",
-    passwd = "Sa204124978",
+    host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
+    port = 3306,
+    user = "admin",
+    passwd = "12345678",
     database = "myblog"
 )
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_folder='/home/ubuntu/build',
+            static_url_path='/')
+
+@app.route('/')
+def index():
+ return app.send_static_file('index.html')
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -96,7 +103,7 @@ def add_new_post():
 
 
 def get_all_posts():
-	query = "select * from posts"
+	query = "select id, title, content, author from posts"
 	data = []
 	cursor = db.cursor()
 	cursor.execute(query)
@@ -110,10 +117,11 @@ def get_all_posts():
 @app.route('/posts/<id>')
 
 def get_post_by_ID(id):
-	query = "select * from posts where id=" + str(id)
+	query = "select id, title, content, author from posts where id=%s"
+	value = [str(id)]
 	data = []
 	cursor = db.cursor()
-	cursor.execute(query)
+	cursor.execute(query, value)
 	records = cursor.fetchall()
 	header = ['id', 'title', 'content', 'author']
 	cursor.close()
