@@ -20,6 +20,11 @@ app = Flask(__name__,
 def index():
  return app.send_static_file('index.html')
 
+
+@app.route("/api/alive")
+def api_alive():
+    return "alive"
+
 @app.route('/register', methods=['POST'])
 def register():
 	data = request.get_json()
