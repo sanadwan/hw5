@@ -19,8 +19,8 @@ class App extends React.Component {
         super(props)
         this.state ={
             LoggedIn: false,
-            first_name:'',
-            user_id:'',
+            first_name: null,
+            user_id:null,
         }
     }
 
@@ -52,7 +52,7 @@ class App extends React.Component {
                     <Header isLoggedIn={this.state.LoggedIn} onLogout={this.setLoginToFalse}/>
                     <Switch>
                         <Route path ="/register" component={Register}/>
-                        <Route path="/login" component={() => <Login LoginSuccess={this.setLoginToTrue}/>}/>
+                        <Route path="/login" component={() => <Login LoginSuccess={this.setLoginToTrue} SetNameId={this.set_Name_Id}/>}/>
                         <Route path='/post/:id' component = {Post}/>}/>
                         <Route path="/aboutme" component={AboutMe}/>
                         <Route path="/about" component={About}/>

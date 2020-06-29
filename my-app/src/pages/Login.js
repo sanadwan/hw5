@@ -7,12 +7,11 @@ import '../Styles/login.css';
 class Login extends React.Component{
     constructor(props) {
         super(props);
-        this.state = {}
-        this.setState({
+        this.state = {
             username: '',
             password: '',
             resp: null,
-        })
+        }
     }
 
 
@@ -42,7 +41,8 @@ class Login extends React.Component{
                     resp: "Success: user logged in.",
                 });
                 this.props.LoginSuccess()
-                this.props.changeNameAndId(res.data)
+                this.props.set_Name_Id(res.data)
+
 
             })
             .catch((err) => {

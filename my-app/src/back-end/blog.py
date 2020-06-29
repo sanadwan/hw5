@@ -8,7 +8,7 @@ db = mysql.connect(
     host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
     port = 3306,
     user = "admin",
-    passwd = "12345678",
+    passwd = "Sa12345678",
     database = "myblog"
 )
 
