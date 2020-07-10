@@ -4,6 +4,18 @@ import {Link} from 'react-router-dom'
 import Axios from "axios";
 
 class Header extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = ({
+            isLoggedIn: this.props.isLoggedIn,
+            firstName: this.props.firstName,
+            user_id: this.props.user_id,
+            onLogout: this.props.onLogout
+        })
+    }
+
+    
 
     thisLogout = () => {
         const url = "/logout";
@@ -13,10 +25,9 @@ class Header extends React.Component {
                 this.props.onLogout()
             })
             .catch((err) => {
-                console.log("error")
+                console.log("error", err)
             });
     }
-
 
     render() {
         return (
@@ -32,11 +43,15 @@ class Header extends React.Component {
                         <Link to="/newpost">New Post</Link>
                     </div>
                     <div className="right-positioned">
-                        {this.props.LoggedIn?
-                            "Hello " + this.props.first_name
+                        {this.props.isLoggedIn?
+                            "Hello " + this.props.firstName
                             :
-                            <Link to="/login">Login</Link>}
-                        {this.props.LoggedIn? <button onClick={this.thisLogout}>Logout</button> : null}
+                            <div>
+                                <Link to="/login">Login</Link>
+                                <span> | </span>
+                                <Link to="/register">Register</Link>
+                            </div>}
+                        {this.props.isLoggedIn? <button onClick={this.thisLogout}>Logout</button> : null}
                     </div>
                 </div>
             </header>

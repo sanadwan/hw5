@@ -3,8 +3,7 @@ import Axios from 'axios';
 import {Link} from 'react-router-dom';
 import '../Styles/login.css';
 
-
-class Login extends React.Component{
+export default class Login extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
@@ -35,17 +34,23 @@ class Login extends React.Component{
         }
         Axios.post(url, data)
             .then((res) => {
-                this.setState({
-                    username: '',
-                    password: '',
-                    resp: "Success: user logged in.",
-                });
+                console.log("axios was called from login!")
+                if(res.status === 200){
+                    this.setState({
+                        username: '',
+                        password: '',
+                        resp: "Success: user logged in.",
+                    });
+                }
+                console.log("I am in the then(res!!!!")
                 this.props.LoginSuccess()
                 this.props.set_Name_Id(res.data)
-
-
+                console.log("login data", res.data)
+                alert("Login successful!")
+                this.props.history.push("/");
             })
             .catch((err) => {
+                console.log(err)
                 this.setState({
                     resp: "Error: failed to login user."
                 });
@@ -68,7 +73,4 @@ class Login extends React.Component{
             </div>
         );
     }
-
 }
-
-export default Login;

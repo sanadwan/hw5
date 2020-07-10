@@ -52,7 +52,7 @@ class Register extends React.Component {
             username: this.state.username,
             password: this.state.password,
         }
-
+        console.log(data)
         Axios.post(url, data)
             .then((res) => {
                 this.setState({
@@ -63,6 +63,8 @@ class Register extends React.Component {
                     password: '',
                     resp: "user registered."
                 });
+                alert("Registration succesfull!")
+                this.props.history.push("/");
             })
             .catch((err) => {
                 this.setState({

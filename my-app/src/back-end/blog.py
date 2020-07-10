@@ -1,16 +1,21 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, abort
+from datetime import datetime
 import mysql.connector as mysql
 import json
 import uuid
 import bcrypt
 
 db = mysql.connect(
-    host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
-    port = 3306,
-    user = "admin",
-    passwd = "Sa12345678",
+    host = "localhost",
+    user = "root",
+    passwd = "Sa204124978",
     database = "myblog"
-)
+ )
+    #"my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
+    #port = 3306,
+    #"admin",
+    #"Sa12345678",
+
 
 app = Flask(__name__,
             static_folder='/home/ubuntu/build',
@@ -62,13 +67,13 @@ def login():
 	first_name = record[2]
 	hashed_pwd = record[1].encode('utf-8')
 	if bcrypt.hashpw(data['password'].encode('utf-8'), hashed_pwd) != hashed_pwd:
-		abort(401)
+		abort(403)
 	session_id = str(uuid.uuid4())
 	query = "insert into sessions (user_id, session_id) values (%s, %s) on duplicate key update session_id=%s"
 	values = (user_id, session_id, session_id)
 	cursor.execute(query, values)
 	db.commit()
-	first_and_id = {"first_name": first_name, "user_id": user_id}
+	first_and_id = {"first_name": first_name, "user_id": user_id, "user_name": data['username']}
 	resp = make_response(first_and_id)
 	resp.set_cookie("session_id", session_id)
 	return resp
@@ -86,6 +91,28 @@ def logout():
 	resp.set_cookie("session_id", '', expires=0)
 	return resp
 
+@app.route('/edit/<id>', methods=['POST'])
+def edit_post_by_id(id):
+    data = request.get_json()
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    query = "UPDATE posts SET title= %s, content= %s, author= %s, image= %s, published= %s WHERE id = %s"
+    value = [data['title'], data['content'], data['author'], data['image'], now, str(id)]
+    data = []
+    cursor = db.cursor()
+    cursor.execute(query, value)
+    db.commit()
+    cursor.close()
+    return  "edit succeed"
+
+@app.route('/delete/<id>', methods=['POST'] )
+def delete_post_by_id(id):
+    query = "DELETE FROM posts WHERE id=%s"
+    value = [str(id)]
+    cursor = db.cursor()
+    cursor.execute(query, value)
+    db.commit()
+    cursor.close()
+    return  "delete succeed"
 
 @app.route('/posts', methods=['GET', 'POST'])
 
@@ -97,8 +124,9 @@ def manage_requests():
 
 def add_new_post():
 	data = request.get_json()
-	query = "insert into posts (title, content, author) values (%s, %s, %s)"
-	values = (data['title'], data['content'], data['author'])
+	now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	query = "insert into posts (userId, title, content, author, image, published) values (%s, %s, %s, %s, %s, %s)"
+	values = (data['user_id'], data['title'], data['content'], data['author'], data['image'], now)
 	cursor = db.cursor()
 	cursor.execute(query, values)
 	db.commit()
@@ -108,12 +136,12 @@ def add_new_post():
 
 
 def get_all_posts():
-	query = "select id, title, content, author from posts"
+	query = "select id, userId, title, content, author, image, published from posts"
 	data = []
 	cursor = db.cursor()
 	cursor.execute(query)
 	records = cursor.fetchall()
-	header = ['id', 'title', 'content', 'author']
+	header = ['id','user_id', 'title', 'content', 'author', 'image', 'published']
 	for r in records:
 		data.append(dict(zip(header, r)))
 	cursor.close()
@@ -122,15 +150,52 @@ def get_all_posts():
 @app.route('/posts/<id>')
 
 def get_post_by_ID(id):
-	query = "select id, title, content, author from posts where id=%s"
+	query = "select id, title, content, author, image, published from posts where id=%s"
 	value = [str(id)]
 	data = []
 	cursor = db.cursor()
 	cursor.execute(query, value)
 	records = cursor.fetchall()
-	header = ['id', 'title', 'content', 'author']
+	header = ['id', 'title', 'content', 'author', 'image', 'published']
 	cursor.close()
 	return json.dumps(dict(zip(header,records[0])), default=str)
+
+
+
+@app.route('/comment/<id>', methods=['GET','POST'])
+
+def manage_request(id):
+    if request.method == 'GET':
+        return get_comment_by_ID(id)
+    else:
+    	return add_new_comment()
+
+def add_new_comment():
+	data = request.get_json()
+	now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	query = "insert into comments (content, username, published, post_id) values (%s, %s, %s, %s)"
+	values = (data['content'], data['username'], now, data['post_id'])
+	cursor = db.cursor()
+	cursor.execute(query, values)
+	db.commit()
+	new_comment_id = cursor.lastrowid
+	cursor.close()
+	return 'New post id: ' + str(new_comment_id)
+
+def get_comment_by_ID(id):
+	query = "select id, content, username, published, post_id from comments where post_id=%s"
+	value = [str(id)]
+	data = []
+	header = ['id', 'content', 'username', 'published', 'post_id']
+	cursor = db.cursor()
+	cursor.execute(query, value)
+	records = cursor.fetchall()
+	if not records:
+   		return 'no comments'
+	for r in records:
+	    data.append(dict(zip(header,r)))
+	cursor.close()
+	return json.dumps(data, default=str)
 
 if __name__ == "__main__":
 	app.run()
