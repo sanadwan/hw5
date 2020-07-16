@@ -52,7 +52,6 @@ class Register extends React.Component {
             username: this.state.username,
             password: this.state.password,
         }
-        console.log(data)
         Axios.post(url, data)
             .then((res) => {
                 this.setState({

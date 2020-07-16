@@ -1,14 +1,16 @@
 from flask import Flask, request, jsonify, make_response, abort
 from datetime import datetime
 import mysql.connector as mysql
+import mysql.connector.pooling as pooling
 import json
 import uuid
 import bcrypt
 
-db = mysql.connect(
-    host = "localhost",
-    user = "root",
-    passwd = "Sa204124978",
+pool = pooling.MySQLConnectionPool(
+    host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
+    port = 3306,
+    user = "admin",
+    passwd = "Sa12345678",
     database = "myblog"
  )
     #"my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
@@ -94,7 +96,7 @@ def logout():
 @app.route('/edit/<id>', methods=['POST'])
 def edit_post_by_id(id):
     data = request.get_json()
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     query = "UPDATE posts SET title= %s, content= %s, author= %s, image= %s, published= %s WHERE id = %s"
     value = [data['title'], data['content'], data['author'], data['image'], now, str(id)]
     data = []
@@ -104,15 +106,15 @@ def edit_post_by_id(id):
     cursor.close()
     return  "edit succeed"
 
-@app.route('/delete/<id>', methods=['POST'] )
-def delete_post_by_id(id):
+@app.route('/posts/delete/<id>', methods=['POST'] )
+def delete_post_by_ID(id):
     query = "DELETE FROM posts WHERE id=%s"
     value = [str(id)]
     cursor = db.cursor()
     cursor.execute(query, value)
     db.commit()
     cursor.close()
-    return  "delete succeed"
+    return  "post delete succeed"
 
 @app.route('/posts', methods=['GET', 'POST'])
 
@@ -124,7 +126,7 @@ def manage_requests():
 
 def add_new_post():
 	data = request.get_json()
-	now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 	query = "insert into posts (userId, title, content, author, image, published) values (%s, %s, %s, %s, %s, %s)"
 	values = (data['user_id'], data['title'], data['content'], data['author'], data['image'], now)
 	cursor = db.cursor()
@@ -141,9 +143,11 @@ def get_all_posts():
 	cursor = db.cursor()
 	cursor.execute(query)
 	records = cursor.fetchall()
+	if not records:
+	    return "no posts"
 	header = ['id','user_id', 'title', 'content', 'author', 'image', 'published']
 	for r in records:
-		data.append(dict(zip(header, r)))
+	    data.append(dict(zip(header, r)))
 	cursor.close()
 	return json.dumps(data, default=str)
 
@@ -160,6 +164,16 @@ def get_post_by_ID(id):
 	cursor.close()
 	return json.dumps(dict(zip(header,records[0])), default=str)
 
+@app.route('/comment/delete/<id>', methods=['POST'])
+def delete_comment_by_ID(id):
+    query = "DELETE from comments where id=%s"
+    value = [str(id)]
+    cursor = db.cursor()
+    cursor.execute(query,value)
+    db.commit()
+    cursor.close()
+    return "comment delete succeed"
+
 
 
 @app.route('/comment/<id>', methods=['GET','POST'])
@@ -172,7 +186,7 @@ def manage_request(id):
 
 def add_new_comment():
 	data = request.get_json()
-	now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 	query = "insert into comments (content, username, published, post_id) values (%s, %s, %s, %s)"
 	values = (data['content'], data['username'], now, data['post_id'])
 	cursor = db.cursor()
@@ -185,7 +199,7 @@ def add_new_comment():
 def get_comment_by_ID(id):
 	query = "select id, content, username, published, post_id from comments where post_id=%s"
 	value = [str(id)]
-	data = []
+	data=[]
 	header = ['id', 'content', 'username', 'published', 'post_id']
 	cursor = db.cursor()
 	cursor.execute(query, value)

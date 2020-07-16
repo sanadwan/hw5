@@ -15,9 +15,7 @@ import Post from "./pages/Post";
 import Login from "./pages/Login";
 import Register from "./pages/Register"
 import Edit from "./pages/Edit";
-import Delete from "./pages/Delete";
 
-import EnsureLoggedInContainer from "./pages/EnsureLoggedInContainer";
 
 class App extends React.Component {
     constructor(props){
@@ -30,19 +28,26 @@ class App extends React.Component {
         }
 
     }
+    componentDidMount() {
+        if(this.state.user_name !== ''){
+            this.setState({
+                LoggedIn : true
+            })
+        }
+    }
 
     setLoginToTrue = (e) => {
         this.setState({
             LoggedIn: true
         })
-        console.log("Login was set to true!")
+        console.log("Logged in!")
     }
 
     setLoginToFalse =(e) =>{
         this.setState({
             LoggedIn: false
         })
-        console.log("Login was set to false!")
+        console.log("Logged out!")
     }
 
 
@@ -52,14 +57,10 @@ class App extends React.Component {
             user_id: data.user_id,
             user_name: data.user_name
         })
-        console.log("yes im here")
-        console.log(data)
-        console.log(this.state)
     }
 
     render (){
         const Logged_in = this.state.LoggedIn
-        console.log("logged in " + Logged_in)
         return (
             <div className="app-header">
                 <Router>
@@ -72,9 +73,7 @@ class App extends React.Component {
                         <Route path="/about" component={About}/>
                          <Route path="/newpost" component={(props) => Logged_in ? <NewPost {...props} user_id={this.state.user_id} />: <Redirect to={'/login'}/>}/>
                          <Route path="/edit/:id" component={(props) => Logged_in ? <Edit {...props} user_id={this.state.user_id} /> : <Redirect to={'/login'}/> } />
-                        <Route path="/delete/:id" component={(props) => Logged_in ? <Delete {...props} user_id={this.state.user_id} />: <Redirect to={'/login'}/>}/>
                         <Route path="/" component={(props) => <Home {...props} UserId={this.state.user_id} UserName={this.state.user_name}/>}/>
-                        {console.log("app ", Logged_in)}
                     </Switch>
                 </Router>
             </div>

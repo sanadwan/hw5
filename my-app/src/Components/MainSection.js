@@ -22,7 +22,7 @@ export default class MainSection extends React.Component{
             <section className="posts">
                 <label className="title"><h1>This is my blog</h1></label>
                 <div id="posts-root" className="posts-list">
-                    <Posts  UserId={user_id } UserName={user_name}/>
+                    <Posts UserId={user_id} UserName={user_name}/>
                 </div>
             </section>
         );

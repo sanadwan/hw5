@@ -30,9 +30,8 @@ class Edit extends React.Component {
                 image: res.data.image,
                 id: id
             });
-            console.log("state    ", res.data)
         }).catch((err)=>{
-            console.log(err)
+            console.log("couldn't get post ", err)
         });
 
 
@@ -54,7 +53,6 @@ class Edit extends React.Component {
     }
 
     handleSubmit = (e) => {
-        //e.preventDefault();
         const data = {
             user_id: this.state.user_id,
             title: this.state.title,
@@ -62,22 +60,16 @@ class Edit extends React.Component {
             author: this.state.author,
             image: this.state.image
         }
-        console.log("this is the data", data)
         let id = this.state.id
         Axios.post(`/edit/${id}`, data).then(res => {
-            const post = res.data;
             this.setState({
                 title: '',
                 content: '',
                 author:'',
                 image:''
             });
-            console.log("post id " + id)
         }).catch((err)=> {
-            console.log(err)
-            // this.setState({
-            //     resp: "Error: failed to login user."
-            // });
+            console.log("couldn't edit post ", err)
         });
     }
 

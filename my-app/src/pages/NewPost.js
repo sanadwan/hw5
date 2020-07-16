@@ -12,7 +12,7 @@ class NewPost extends React.Component {
             author: '',
             published:'',
             user_id: this.props.user_id,
-            image: null
+            image: ''
         };
     }
 
@@ -46,10 +46,9 @@ class NewPost extends React.Component {
             author: this.state.author,
             image: this.state.image,
         }
-        console.log(data)
         Axios.post('/posts', data).then(res => {
-            const post = res.data;
-            console.log(post)
+
+            console.log("added post")
             this.setState({
                 user_id: '',
                 title: '',
@@ -72,21 +71,22 @@ class NewPost extends React.Component {
         return (
             <div>
                 <h1>Create new post</h1>
-                <p>
+                <div>
                     <br/>
-                    <input type="text" value={this.state.title} placeholder="Enter your title" size="48" onChange={this.handleTitleChange}/>
+                    <input type="text" value={this.state.title} required placeholder="Enter your title" size="48" onChange={this.handleTitleChange}/>
                     <br/><br/>
-                    {console.log("username " + this.state.user_id)}
-                    <textarea rows="8" cols="50" value={this.state.content} placeholder="Enter your post content" onChange={this.handleContentChange}/>
+                    <textarea rows="8" cols="50" value={this.state.content} required placeholder="Enter your post content" onChange={this.handleContentChange}/>
                     <br/><br/>
-                    <input type="text" value={this.state.author} placeholder="Author Name" size="48" onChange={this.handleAuthorChange}/>
+                    <input type="text" value={this.state.author} required placeholder="Author Name" size="48" onChange={this.handleAuthorChange}/>
                     <br/><br/>
                     <input type="file" value={this.state.image} size="48" accept="image/png, image/jpeg" onChange={this.handleImageChange}/>
                     <br/>Or<br/>
                     <input type="text" value={this.state.image} placeholder="image URL" size="48" onChange={this.handleImageChange}/>
                     <br/><br/>
-                    <input type="submit" value="Save post" onClick={this.handleSubmit}/>
-                </p>
+                    <form onSubmit={this.handleSubmit} className={"newpost-submit-button"}>
+                        <input type="submit" value="Save post" onClick={this.handleSubmit}/>
+                    </form>
+                </div>
             </div>
         );
 
