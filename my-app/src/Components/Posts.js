@@ -82,8 +82,7 @@ export default class Posts extends React.Component {
         console.log("delete post " + id)
         if (id) {
             Axios.post(`/posts/delete/${id}`).then(res => {
-                this.forceUpdate()
-                return "succeed to delete"
+                return this.componentDidMount()
             }).catch((err) => {
                 console.log("Couldn't delete this post", err)
             })

@@ -1,19 +1,20 @@
-from flask import Flask, request, jsonify, make_response, abort
+from flask import Flask, request, jsonify, make_response, abort, g
 from datetime import datetime
-import mysql.connector as mysql
-import mysql.connector.pooling as pooling
+import mysql.connector, mysql.connector.pooling
 import json
 import uuid
 import bcrypt
 
-pool = pooling.MySQLConnectionPool(
+pool = mysql.connector.pooling.MySQLConnectionPool(
     host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
-    port = 3306,
     user = "admin",
     passwd = "Sa12345678",
-    database = "myblog"
+    database = "myblog",
+    buffered = True,
+    pool_size = 3
  )
     #"my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
+    # my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com
     #port = 3306,
     #"admin",
     #"Sa12345678",
@@ -22,6 +23,14 @@ pool = pooling.MySQLConnectionPool(
 app = Flask(__name__,
             static_folder='/home/ubuntu/build',
             static_url_path='/')
+
+@app.before_request
+def before_request():
+    g.db = pool.get_connection()
+
+@app.teardown_request
+def teardown_request(exception):
+    g.db.close()
 
 @app.route('/')
 def index():
@@ -38,7 +47,7 @@ def register():
 	print(data)
 	query = "select id from users where username = (%s)"
 	value = (data['username'], )
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, value)
 	records = cursor.fetchall()
 	print(records)
@@ -48,7 +57,7 @@ def register():
 	query = "insert into users (first_name, last_name, email, username, password) values (%s, %s, %s, %s, %s)"
 	values = (data['firstName'], data['lastName'], data['email'], data['username'], hashed_pwd)
 	cursor.execute(query, values)
-	db.commit()
+	g.db.commit()
 	new_user_id = cursor.lastrowid
 	cursor.close()
 	return 'New user id: ' + str(new_user_id)
@@ -60,7 +69,7 @@ def login():
 	print(data)
 	query = "select id, password, first_name from users where username = %s"
 	values = (data['username'], )
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, values)
 	record = cursor.fetchone()
 	if not record:
@@ -74,7 +83,7 @@ def login():
 	query = "insert into sessions (user_id, session_id) values (%s, %s) on duplicate key update session_id=%s"
 	values = (user_id, session_id, session_id)
 	cursor.execute(query, values)
-	db.commit()
+	g.db.commit()
 	first_and_id = {"first_name": first_name, "user_id": user_id, "user_name": data['username']}
 	resp = make_response(first_and_id)
 	resp.set_cookie("session_id", session_id)
@@ -85,9 +94,9 @@ def logout():
 	data = request.get_json()
 	query = "delete from sessions where user_id=%s"
 	value = (data['user_id'],)
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, value)
-	db.commit()
+	g.db.commit()
 	cursor.close()
 	resp = make_response()
 	resp.set_cookie("session_id", '', expires=0)
@@ -100,19 +109,24 @@ def edit_post_by_id(id):
     query = "UPDATE posts SET title= %s, content= %s, author= %s, image= %s, published= %s WHERE id = %s"
     value = [data['title'], data['content'], data['author'], data['image'], now, str(id)]
     data = []
-    cursor = db.cursor()
+    cursor = g.db.cursor()
     cursor.execute(query, value)
-    db.commit()
+    g.db.commit()
     cursor.close()
     return  "edit succeed"
 
 @app.route('/posts/delete/<id>', methods=['POST'] )
 def delete_post_by_ID(id):
-    query = "DELETE FROM posts WHERE id=%s"
     value = [str(id)]
-    cursor = db.cursor()
+    query = "DELETE FROM comments Where post_id=%s"
+    cursor = g.db.cursor()
     cursor.execute(query, value)
-    db.commit()
+    g.db.commit()
+    cursor.close()
+    query = "DELETE FROM posts WHERE id=%s"
+    cursor = g.db.cursor()
+    cursor.execute(query, value)
+    g.db.commit()
     cursor.close()
     return  "post delete succeed"
 
@@ -129,9 +143,9 @@ def add_new_post():
 	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 	query = "insert into posts (userId, title, content, author, image, published) values (%s, %s, %s, %s, %s, %s)"
 	values = (data['user_id'], data['title'], data['content'], data['author'], data['image'], now)
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, values)
-	db.commit()
+	g.db.commit()
 	new_post_id = cursor.lastrowid
 	cursor.close()
 	return 'New post id: ' + str(new_post_id)
@@ -140,7 +154,7 @@ def add_new_post():
 def get_all_posts():
 	query = "select id, userId, title, content, author, image, published from posts"
 	data = []
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query)
 	records = cursor.fetchall()
 	if not records:
@@ -157,7 +171,7 @@ def get_post_by_ID(id):
 	query = "select id, title, content, author, image, published from posts where id=%s"
 	value = [str(id)]
 	data = []
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, value)
 	records = cursor.fetchall()
 	header = ['id', 'title', 'content', 'author', 'image', 'published']
@@ -168,9 +182,9 @@ def get_post_by_ID(id):
 def delete_comment_by_ID(id):
     query = "DELETE from comments where id=%s"
     value = [str(id)]
-    cursor = db.cursor()
+    cursor = g.db.cursor()
     cursor.execute(query,value)
-    db.commit()
+    g.db.commit()
     cursor.close()
     return "comment delete succeed"
 
@@ -189,9 +203,9 @@ def add_new_comment():
 	now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 	query = "insert into comments (content, username, published, post_id) values (%s, %s, %s, %s)"
 	values = (data['content'], data['username'], now, data['post_id'])
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, values)
-	db.commit()
+	g.db.commit()
 	new_comment_id = cursor.lastrowid
 	cursor.close()
 	return 'New post id: ' + str(new_comment_id)
@@ -201,7 +215,7 @@ def get_comment_by_ID(id):
 	value = [str(id)]
 	data=[]
 	header = ['id', 'content', 'username', 'published', 'post_id']
-	cursor = db.cursor()
+	cursor = g.db.cursor()
 	cursor.execute(query, value)
 	records = cursor.fetchall()
 	if not records:
