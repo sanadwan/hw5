@@ -47,7 +47,7 @@ export default class Posts extends React.Component {
     };
     postMap = () => {
         let posts = this.state.posts
-        if (posts !== "no post") {
+        if (posts !== "no posts") {
             return posts.map((post, index) => {
                 return this.Post(post, index)
             })
