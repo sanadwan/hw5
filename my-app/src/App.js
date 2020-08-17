@@ -10,11 +10,11 @@ import Header from "./Components/Header";
 import AboutMe from "./pages/AboutMe";
 import About from "./pages/About";
 import Home from "./pages/Home";
-import NewPost from "./pages/NewPost";
-import Post from "./pages/Post";
+import PostForm from "./Components/PostForm"
+import SinglePost from "./pages/SinglePost";
 import Login from "./pages/Login";
 import Register from "./pages/Register"
-import Edit from "./pages/Edit";
+
 
 
 class App extends React.Component {
@@ -36,14 +36,14 @@ class App extends React.Component {
         }
     }
 
-    setLoginToTrue = (e) => {
+    setLoginToTrue = () => {
         this.setState({
             LoggedIn: true
         })
         console.log("Logged in!")
     }
 
-    setLoginToFalse =(e) =>{
+    setLoginToFalse =() =>{
         this.setState({
             LoggedIn: false
         })
@@ -68,11 +68,11 @@ class App extends React.Component {
                     <Switch>
                         <Route path ="/register" component={Register}/>
                         <Route path="/login" component={(props) => <Login {...props} LoginSuccess={this.setLoginToTrue} set_Name_Id={this.set_Name_Id}/>}/>
-                        <Route path='/post/:id' component = {Post}/>}/>
+                        <Route path='/post/:id' component = {(props) => <SinglePost {...props} UserName={this.state.user_name} LoggedIn={this.state.LoggedIn}/>}/>
                         <Route path="/aboutme" component={AboutMe}/>
                         <Route path="/about" component={About}/>
-                         <Route path="/newpost" component={(props) => Logged_in ? <NewPost {...props} user_id={this.state.user_id} />: <Redirect to={'/login'}/>}/>
-                         <Route path="/edit/:id" component={(props) => Logged_in ? <Edit {...props} user_id={this.state.user_id} /> : <Redirect to={'/login'}/> } />
+                         <Route path="/newpost" component={(props) => Logged_in ? <PostForm {...props} user_id={this.state.user_id} edit={false} />: <Redirect to={'/login'}/>}/>
+                         <Route path="/edit/:id" component={(props) => Logged_in ? <PostForm {...props} user_id={this.state.user_id} edit={true} /> : <Redirect to={'/login'}/> } />
                         <Route path="/" component={(props) => <Home {...props} UserId={this.state.user_id} UserName={this.state.user_name}/>}/>
                     </Switch>
                 </Router>

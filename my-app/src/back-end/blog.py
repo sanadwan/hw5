@@ -5,19 +5,24 @@ import json
 import uuid
 import bcrypt
 
+#pool = mysql.connector.pooling.MySQLConnectionPool(
+ #   host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
+  #  user = "admin",
+   # passwd = "Sa12345678",
+    #database = "myblog",
+    #buffered = True,
+    #pool_size = 3
+ #)
+
 pool = mysql.connector.pooling.MySQLConnectionPool(
-    host = "my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
-    user = "admin",
-    passwd = "Sa12345678",
+    host="localhost",
+    user="root",
+    passwd="Sa204124978",
     database = "myblog",
     buffered = True,
     pool_size = 3
+
  )
-    #"my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com",
-    # my-rds.cyoip7lq8wu8.us-east-1.rds.amazonaws.com
-    #port = 3306,
-    #"admin",
-    #"Sa12345678",
 
 
 app = Flask(__name__,
@@ -102,33 +107,6 @@ def logout():
 	resp.set_cookie("session_id", '', expires=0)
 	return resp
 
-@app.route('/edit/<id>', methods=['POST'])
-def edit_post_by_id(id):
-    data = request.get_json()
-    now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    query = "UPDATE posts SET title= %s, content= %s, author= %s, image= %s, published= %s WHERE id = %s"
-    value = [data['title'], data['content'], data['author'], data['image'], now, str(id)]
-    data = []
-    cursor = g.db.cursor()
-    cursor.execute(query, value)
-    g.db.commit()
-    cursor.close()
-    return  "edit succeed"
-
-@app.route('/posts/delete/<id>', methods=['POST'] )
-def delete_post_by_ID(id):
-    value = [str(id)]
-    query = "DELETE FROM comments Where post_id=%s"
-    cursor = g.db.cursor()
-    cursor.execute(query, value)
-    g.db.commit()
-    cursor.close()
-    query = "DELETE FROM posts WHERE id=%s"
-    cursor = g.db.cursor()
-    cursor.execute(query, value)
-    g.db.commit()
-    cursor.close()
-    return  "post delete succeed"
 
 @app.route('/posts', methods=['GET', 'POST'])
 
@@ -148,7 +126,7 @@ def add_new_post():
 	g.db.commit()
 	new_post_id = cursor.lastrowid
 	cursor.close()
-	return 'New post id: ' + str(new_post_id)
+	return str(new_post_id)
 
 
 def get_all_posts():
@@ -165,7 +143,15 @@ def get_all_posts():
 	cursor.close()
 	return json.dumps(data, default=str)
 
-@app.route('/posts/<id>')
+@app.route('/posts/<id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+
+def manage_requests_by_id(id):
+    if request.method == 'GET':
+        return get_post_by_ID(id)
+    if request.method == 'PUT':
+        return edit_post_by_id(id)
+    else:
+    	return delete_post_by_ID(id)
 
 def get_post_by_ID(id):
 	query = "select id, title, content, author, image, published from posts where id=%s"
@@ -178,23 +164,41 @@ def get_post_by_ID(id):
 	cursor.close()
 	return json.dumps(dict(zip(header,records[0])), default=str)
 
-@app.route('/comment/delete/<id>', methods=['POST'])
-def delete_comment_by_ID(id):
-    query = "DELETE from comments where id=%s"
+def delete_post_by_ID(id):
     value = [str(id)]
+    query = "DELETE FROM comments Where post_id=%s"
     cursor = g.db.cursor()
-    cursor.execute(query,value)
+    cursor.execute(query, value)
     g.db.commit()
     cursor.close()
-    return "comment delete succeed"
+    query = "DELETE FROM posts WHERE id=%s"
+    cursor = g.db.cursor()
+    cursor.execute(query, value)
+    g.db.commit()
+    cursor.close()
+    return  "Post delete succeed"
+
+def edit_post_by_id(id):
+    data = request.get_json()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    query = "UPDATE posts SET title= %s, content= %s, author= %s, image= %s, published= %s WHERE id = %s"
+    value = [data['title'], data['content'], data['author'], data['image'], now, str(id)]
+    data = []
+    cursor = g.db.cursor()
+    cursor.execute(query, value)
+    g.db.commit()
+    cursor.close()
+    return  "edit succeed"
 
 
 
-@app.route('/comment/<id>', methods=['GET','POST'])
+@app.route('/comment/<id>', methods=['GET','POST','DELETE'])
 
 def manage_request(id):
     if request.method == 'GET':
         return get_comment_by_ID(id)
+    if request.method == 'DELETE':
+        return delete_comment_by_ID(id)
     else:
     	return add_new_comment()
 
@@ -208,7 +212,7 @@ def add_new_comment():
 	g.db.commit()
 	new_comment_id = cursor.lastrowid
 	cursor.close()
-	return 'New post id: ' + str(new_comment_id)
+	return str(new_comment_id)
 
 def get_comment_by_ID(id):
 	query = "select id, content, username, published, post_id from comments where post_id=%s"
@@ -224,6 +228,15 @@ def get_comment_by_ID(id):
 	    data.append(dict(zip(header,r)))
 	cursor.close()
 	return json.dumps(data, default=str)
+
+def delete_comment_by_ID(id):
+    query = "DELETE from comments where id=%s"
+    value = [str(id)]
+    cursor = g.db.cursor()
+    cursor.execute(query,value)
+    g.db.commit()
+    cursor.close()
+    return "comment delete succeed"
 
 if __name__ == "__main__":
 	app.run()
