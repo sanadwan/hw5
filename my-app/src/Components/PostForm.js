@@ -132,7 +132,7 @@ class PostForm extends React.Component {
                         <br/>Or<br/>
                         <input type="text" defaultValue={image} placeholder="image URL" size="48" onChange={this.handleImageChange}/>
                         <br/><br/>
-                        <input type="submit" defaultValue="Save post" onClick={this.handleSubmit}/>
+                        <input type="submit" defaultValue="Save post"/>
                     </form>
                 </div>
             </div>

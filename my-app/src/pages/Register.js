@@ -5,15 +5,14 @@ import '../Styles/register.css';
 class Register extends React.Component {
     constructor(props) {
         super(props)
-        this.state = {}
-        this.setState({
-            firstName: null,
-            lastName: null,
-            email: null,
-            username: null,
-            password: null,
-            resp: null
-        })
+        this.state = {
+            firstName: '',
+            lastName: '',
+            email: '',
+            username: '',
+            password: '',
+            resp: ''
+        }
     }
 
     handleFirstNameChange = (e) => {
@@ -54,37 +53,41 @@ class Register extends React.Component {
         }
         Axios.post(url, data)
             .then((res) => {
-                this.setState({
-                    firstName: '',
-                    lastName: '',
-                    email:'',
-                    username: '',
-                    password: '',
-                    resp: "user registered."
-                });
-                alert("Registration succesfull!")
+                if(res.data !== '') {
+                    this.setState({
+                        firstName: '',
+                        lastName: '',
+                        email: '',
+                        username: '',
+                        password: '',
+                        resp: "user registered."
+                    });
+                    alert("Registration successfully!")
+                } else {
+                    alert("Error: Can not add new post")
+                }
                 this.props.history.push("/");
             })
             .catch((err) => {
                 this.setState({
-                    resp: "Error: User name already in use"
+                    resp: "Error: User name already in use", err
                 });
             });
     }
 
     render() {
         return (
-            <div className={"registerForm"}>
+            <form className={"registerForm"} onSubmit={this.thisRegister}>
                 <input type="text" placeholder={"First Name"} value={this.state.firstName} required onChange={this.handleFirstNameChange}/><br/>
                 <input type="text" placeholder={"Last Name"} value={this.state.lastName} required onChange={this.handleLastNameChange}/><br/>
                 <input type="text" placeholder={"Email"} value={this.state.email} required onChange={this.handleEmailChange}/><br/>
                 <input type="text" placeholder={"Username"} value={this.state.username} required onChange={this.handleUserNameChange}/><br/>
                 <input type="password" placeholder={"Password A-Z,a-z,0-9"} value={this.state.password} onChange={this.handlePasswordChange}/><br/>
-                <button onClick={this.thisRegister}>Register</button>
+                <input type={"submit"} defaultValue="Register" />
                 <div className={"registerResponse"} >
                     {this.state.resp ? this.state.resp : null}
                 </div>
-            </div>
+            </form>
         )
     }
 }
