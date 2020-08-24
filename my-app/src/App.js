@@ -5,7 +5,7 @@ import {
     Switch,
     Route, Redirect
 } from 'react-router-dom'
-
+import Axios from 'axios';
 import Header from "./Components/Header";
 import AboutMe from "./pages/AboutMe";
 import About from "./pages/About";
@@ -29,11 +29,24 @@ class App extends React.Component {
 
     }
     componentDidMount() {
-        if(this.state.user_name !== ''){
-            this.setState({
-                LoggedIn : true
-            })
-        }
+        Axios.get('/login')
+            .then((res)=>{
+                if(res.data !== []){
+                    return this.setState({
+                        LoggedIn: true,
+                        user_id: res.data.user_id,
+                        first_name: res.data.first_name,
+                        user_name: res.data.username
+                    })
+                } else {
+                   return this.setState({
+                        LoggedIn: false,
+                        user_id: '',
+                        first_name: '',
+                        username: ''
+                    })
+                }
+        })
     }
 
     setLoginToTrue = () => {

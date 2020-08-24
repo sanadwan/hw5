@@ -61,7 +61,7 @@ class PostForm extends React.Component {
     handleSubmit = (e) => {
         e.preventDefault();
         const data = {
-            user_id: this.state.user_id,
+            user_id: this.state.usxer_id,
             title: this.state.title,
             content: this.state.content,
             author: this.state.author,
@@ -107,10 +107,7 @@ class PostForm extends React.Component {
 
     render() {
         let edit = this.state.edit
-        // if (edit){
             let {title, content, author, image} = this.state
-        //
-        // }
         return (
             <div>
                 { edit &&
